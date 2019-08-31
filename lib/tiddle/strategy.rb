@@ -8,7 +8,7 @@ module Devise
       def authenticate!
         env["devise.skip_trackable"] = true
 
-        resource = mapping.to.find_for_authentication(authentication_keys_from_headers)
+        resource = mapping.to.find_by_key(authentication_keys_from_headers)
         return fail(:invalid_token) unless resource
 
         token = Tiddle::TokenIssuer.build.find_token(resource, token_from_headers)
@@ -31,13 +31,11 @@ module Devise
       private
 
       def authentication_keys_from_headers
-        authentication_keys.map do |key|
-          { key => env["HTTP_X_#{model_name}_#{key.upcase}"] }
-        end.reduce(:merge)
+        env["HTTP_X_API_KEY"]
       end
 
       def token_from_headers
-        env["HTTP_X_#{model_name}_TOKEN"]
+        env["HTTP_X_API_TOKEN"]
       end
 
       def model_name
